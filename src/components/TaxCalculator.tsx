@@ -1,27 +1,30 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 
-type DeductionType = 'rent' | 'children' | 'investment'
+type DeductionType = 'alquiler' | 'hijos' | 'inversion'
+
+type InvestmentType = 'verde' | 'electrico' | 'startup'
 
 export default function TaxCalculator() {
-  const [type, setType] = useState<DeductionType>('rent')
+  const [type, setType] = useState<DeductionType>('alquiler')
   const [inputs, setInputs] = useState<Record<string, string>>({})
   const [result, setResult] = useState<number | null>(null)
 
   const calculate = () => {
     let deduction = 0
-    if (type === 'rent') {
-      const age = parseInt(inputs.age || '0')
-      const rent = parseFloat(inputs.rent || '0')
-      const income = parseFloat(inputs.income || '0')
-      const highDemand = inputs.highDemand === 'yes'
+
+    if (type === 'alquiler') {
+      const age = parseInt(inputs.edad || '0')
+      const rent = parseFloat(inputs.alquiler || '0')
+      const income = parseFloat(inputs.ingresos || '0')
+      const highDemand = inputs.zona === 'alta'
       const maxRent = highDemand ? 800 : 600
       if (age < 35 && rent <= maxRent && income <= 25000) {
         deduction = Math.min(0.2 * rent, 300)
       }
-    } else if (type === 'children') {
-      const numChildren = parseInt(inputs.children || '0')
+    } else if (type === 'hijos') {
+      const numChildren = parseInt(inputs.hijos || '0')
       const deductions = [0, 2500, 2800, 4200, 4500]
       for (let i = 1; i <= numChildren && i < deductions.length; i++) {
         deduction += deductions[i]
@@ -29,17 +32,18 @@ export default function TaxCalculator() {
       if (numChildren > 4) {
         deduction += (numChildren - 4) * 4500
       }
-    } else if (type === 'investment') {
-      const invType = inputs.invType
-      const amount = parseFloat(inputs.amount || '0')
-      if (invType === 'green') {
+    } else if (type === 'inversion') {
+      const investmentType = inputs.tipoInversion as InvestmentType
+      const amount = parseFloat(inputs.monto || '0')
+      if (investmentType === 'verde') {
         deduction = Math.min(0.2 * amount, 5000)
-      } else if (invType === 'electric') {
+      } else if (investmentType === 'electrico') {
         deduction = Math.min(0.15 * amount, 2000)
-      } else if (invType === 'startup') {
-        deduction = Math.min(0.3 * amount, 10000) // assuming small company
+      } else if (investmentType === 'startup') {
+        deduction = Math.min(0.3 * amount, 10000)
       }
     }
+
     setResult(deduction)
   }
 
@@ -48,97 +52,125 @@ export default function TaxCalculator() {
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl text-gray-800">
-      <h1 className="text-3xl font-bold mb-6 text-center">Calculadora TaxSaver 2026</h1>
-      <div className="mb-6">
-        <label className="block text-lg font-semibold mb-3">Tipo de Deducción</label>
-        <select
-          value={type}
-          onChange={(e) => setType(e.target.value as DeductionType)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        >
-          <option value="rent">Alquiler</option>
-          <option value="children">Hijos</option>
-          <option value="investment">Inversión</option>
-        </select>
+    <div className="rounded-[2rem] border border-white/10 bg-slate-950/90 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.35)] text-slate-100">
+      <div className="mb-8 text-center">
+        <p className="text-sm uppercase tracking-[0.28em] text-purple-300">Herramienta premium</p>
+        <h2 className="mt-4 text-3xl font-semibold">Calcula tu ahorro fiscal</h2>
+        <p className="mt-3 text-slate-400">Rellena tus datos y obtén un resultado claro y rápido.</p>
       </div>
 
-      {type === 'rent' && (
-        <div className="space-y-4">
-          <input
-            type="number"
-            placeholder="Edad"
-            onChange={(e) => handleInputChange('age', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-          <input
-            type="number"
-            placeholder="Alquiler Anual (€)"
-            onChange={(e) => handleInputChange('rent', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-          <input
-            type="number"
-            placeholder="Ingresos Anuales (€)"
-            onChange={(e) => handleInputChange('income', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">Tipo de deducción</label>
           <select
-            onChange={(e) => handleInputChange('highDemand', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            value={type}
+            onChange={(e) => setType(e.target.value as DeductionType)}
+            className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
           >
-            <option value="no">Zona Normal</option>
-            <option value="yes">Zona de Alta Demanda</option>
+            <option value="alquiler">Alquiler</option>
+            <option value="hijos">Hijos</option>
+            <option value="inversion">Inversión</option>
           </select>
         </div>
-      )}
 
-      {type === 'children' && (
-        <input
-          type="number"
-          placeholder="Número de Hijos"
-          onChange={(e) => handleInputChange('children', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-        />
-      )}
+        {type === 'alquiler' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Edad</label>
+              <input
+                type="number"
+                placeholder="Ej. 30"
+                onChange={(e) => handleInputChange('edad', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Alquiler anual (€)</label>
+              <input
+                type="number"
+                placeholder="Ej. 7200"
+                onChange={(e) => handleInputChange('alquiler', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Ingresos anuales (€)</label>
+              <input
+                type="number"
+                placeholder="Ej. 18000"
+                onChange={(e) => handleInputChange('ingresos', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Zona</label>
+              <select
+                onChange={(e) => handleInputChange('zona', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              >
+                <option value="normal">Zona normal</option>
+                <option value="alta">Zona de alta demanda</option>
+              </select>
+            </div>
+          </div>
+        )}
 
-      {type === 'investment' && (
-        <div className="space-y-4">
-          <select
-            onChange={(e) => handleInputChange('invType', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="green">Inversión Verde</option>
-            <option value="electric">Vehículo Eléctrico</option>
-            <option value="startup">Startup</option>
-          </select>
-          <input
-            type="number"
-            placeholder="Cantidad Invertida (€)"
-            onChange={(e) => handleInputChange('amount', e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
-      )}
+        {type === 'hijos' && (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Número de hijos</label>
+            <input
+              type="number"
+              placeholder="Ej. 2"
+              onChange={(e) => handleInputChange('hijos', e.target.value)}
+              className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+            />
+          </div>
+        )}
 
-      <button
-        onClick={calculate}
-        className="w-full mt-6 p-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-blue-600 transition-all duration-300 shadow-lg"
-      >
-        Calcular mi Ahorro
-      </button>
+        {type === 'inversion' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Tipo de inversión</label>
+              <select
+                onChange={(e) => handleInputChange('tipoInversion', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              >
+                <option value="verde">Inversión verde</option>
+                <option value="electrico">Vehículo eléctrico</option>
+                <option value="startup">Startup</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Importe invertido (€)</label>
+              <input
+                type="number"
+                placeholder="Ej. 5000"
+                onChange={(e) => handleInputChange('monto', e.target.value)}
+                className="w-full rounded-3xl border border-slate-700 bg-slate-900 px-4 py-3 text-slate-100 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30"
+              />
+            </div>
+          </div>
+        )}
 
-      {result !== null && (
-        <div className="mt-6 p-4 bg-green-100 rounded-lg border border-green-200">
-          <p className="text-xl font-semibold text-green-800">Ahorro Fiscal: €{result.toFixed(2)}</p>
-          <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-3">¿Necesitas ayuda profesional con tus impuestos?</p>
-            <div className="space-y-2">
+        <button
+          onClick={calculate}
+          className="w-full rounded-3xl bg-gradient-to-r from-purple-500 to-sky-500 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:from-purple-600 hover:to-sky-600"
+        >
+          Calcular mi Ahorro
+        </button>
+
+        {result !== null && (
+          <div className="rounded-3xl border border-green-500/20 bg-emerald-50/80 p-6 text-slate-900 shadow-lg shadow-emerald-500/10">
+            <p className="text-sm uppercase tracking-[0.24em] text-emerald-700">Ahorro estimado</p>
+            <p className="mt-4 text-4xl font-semibold">€{result.toFixed(2)}</p>
+            <p className="mt-2 text-slate-600">Estimación basada en las reglas comunes de deducción para 2026.</p>
+
+            <div className="mt-5 space-y-3">
               <a
                 href="https://taxdown.es/afiliados?ref=yourcode"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 bg-blue-500 text-white rounded text-center hover:bg-blue-600 transition-colors"
+                className="block rounded-3xl bg-blue-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 Optimiza con TaxDown
               </a>
@@ -146,7 +178,7 @@ export default function TaxCalculator() {
                 href="https://infoautonomos.com/afiliados"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 bg-green-500 text-white rounded text-center hover:bg-green-600 transition-colors"
+                className="block rounded-3xl bg-green-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-green-700"
               >
                 Usa Infoautonomos
               </a>
@@ -154,15 +186,15 @@ export default function TaxCalculator() {
                 href="https://www.contasimple.com/afiliados"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-2 bg-purple-500 text-white rounded text-center hover:bg-purple-600 transition-colors"
+                className="block rounded-3xl bg-violet-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-violet-700"
               >
                 Prueba Contasimple
               </a>
             </div>
-            <p className="text-xs text-gray-500 mt-3">Enlaces de afiliados que pueden generar comisiones.</p>
+            <p className="mt-4 text-xs text-slate-500">Enlaces de afiliados que pueden generar comisiones.</p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
